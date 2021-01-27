@@ -1,27 +1,18 @@
 const router = require('express').Router();
 const usersModel = require('../models/users')()
 
+const middlewareAddUsers = require('../middleware/addusers');
+
 module.exports=function routes() {
     router.get('/users', async (req, res) => {
         const data = await usersModel.find({});
         res.send(data);
     });
 
-    router.post('/users/create', async (req, res) => {
+    router.post('/users',middlewareAddUsers, async (req, res) => {
 
-        //create middleware to verify input data
-        const allowKeys = ["fullName", "age"];
-        const dataInsert=req.body
-        try {
-            for (let i = 0; i < dataInsert.length; i++) {
-                const requestKeys = Object.keys(dataInsert[i]);
-                for (let j = 0; j < requestKeys.length; j++) {
-                    if (!allowKeys.includes(requestKeys[j])) {
-                    throw new Error(`data ${requestKeys[j]} tidak sesuai format`)
-                    }
-                }
-            }
-            await usersModel.create(dataInsert);
+        try {           
+            await usersModel.create(req.body);
             res.json({ message: "success create new data users" });
         } catch (error) {
             console.log(error)
@@ -29,7 +20,7 @@ module.exports=function routes() {
         }
     });
 
-    router.put('/users/updates', async (req, res) => {
+    router.put('/users', async (req, res) => {
 
         try {
             const id = req.body["_id"];
@@ -43,7 +34,7 @@ module.exports=function routes() {
         }        
     });
 
-    router.delete('/users/delete', async (req, res) => {
+    router.delete('/users', async (req, res) => {
         try {
             const name=req.body["_id"]
             await usersModel.findByIdAndDelete({ _id: name })
